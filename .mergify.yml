@@ -1,0 +1,13 @@
+pull_request_rules:
+  - name: controlled queue test
+    conditions:
+      - "#approved-reviews-by>=1"
+      - check-success=controlled-ci
+    actions:
+      queue:
+        method: squash
+
+queue_rules:
+  - name: default
+    conditions:
+      - check-success=controlled-ci
