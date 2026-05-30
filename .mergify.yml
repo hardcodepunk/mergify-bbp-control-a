@@ -1,12 +1,7 @@
-commands_restrictions:
-  refresh:
-    conditions:
-      - sender = definitely-not-hardcodepunk-bbp
-
 pull_request_rules:
   - name: controlled comment action
     conditions:
-      - label = bbp-trigger
+      - label=bbp-trigger
     actions:
       comment:
         message: |
