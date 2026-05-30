@@ -1,13 +1,11 @@
-pull_request_rules:
-  - name: controlled queue test
-    conditions:
-      - "#approved-reviews-by>=1"
-      - check-success=controlled-ci
-    actions:
-      queue:
-        method: squash
+x-label: &target_label "security-review"
 
-queue_rules:
-  - name: default
+pull_request_rules:
+  - name: duplicate key and anchor observation
     conditions:
-      - check-success=controlled-ci
+      - label=*target_label
+      - label=security-review
+    actions:
+      label:
+        add:
+          - parsed-by-mergify
