@@ -1,8 +1,7 @@
 pull_request_rules:
-  - name: controlled comment action
+  - name: intentionally invalid queue action
     conditions:
       - label = bbp-trigger
     actions:
-      comment:
-        message: |
-          controlled workflow automation fired for PR #{{number}} by {{author}}
+      queue:
+        method: squash
