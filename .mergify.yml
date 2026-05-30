@@ -1,14 +1,13 @@
-pull_request_rules:
-  - name: controlled queue test
+commands_restrictions:
+  refresh:
     conditions:
-      - "#approved-reviews-by>=1"
-      - check-success=controlled-ci
-    actions:
-      queue:
-        name: default
+      - sender = definitely-not-hardcodepunk-bbp
 
-queue_rules:
-  - name: default
-    merge_method: squash
-    queue_conditions:
-      - check-success=controlled-ci
+pull_request_rules:
+  - name: controlled comment action
+    conditions:
+      - label = bbp-trigger
+    actions:
+      comment:
+        message: |
+          controlled workflow automation fired for PR #{{number}} by {{author}}
