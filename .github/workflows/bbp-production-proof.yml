@@ -33,7 +33,8 @@ jobs:
           test "$deployment_id" != "null"
           status_payload=$(jq -n \
             --arg description "Controlled deployment proof completed." \
-            '{state: "success", environment: "bbp-controlled-production", description: $description, log_url: env.GITHUB_SERVER_URL + "/" + env.GITHUB_REPOSITORY + "/actions/runs/" + env.GITHUB_RUN_ID}')
+            --arg log_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state: "success", environment: "bbp-controlled-production", description: $description, log_url: $log_url}')
           curl -sS -X POST \
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
