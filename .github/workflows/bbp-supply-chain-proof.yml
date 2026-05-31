@@ -1,0 +1,26 @@
+name: bbp supply-chain proof
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "proof-impact/supply-chain.txt"
+
+permissions:
+  contents: write
+
+jobs:
+  publish-controlled-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create controlled release artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="bbp-supply-chain-proof-${GITHUB_SHA::12}"
+          printf 'controlled Mergify BBP supply-chain proof for %s\n' "$GITHUB_SHA" > supply-chain-proof.txt
+          gh release create "$tag" supply-chain-proof.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "BBP controlled supply-chain proof ${GITHUB_SHA::12}" \
+            --notes "Controlled proof that a merge to main triggered release/artifact publication."
