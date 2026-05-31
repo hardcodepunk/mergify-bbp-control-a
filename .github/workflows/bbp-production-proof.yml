@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "proof-impact/production.txt"
+      - "proof-impact/**"
 
 permissions:
   contents: read
