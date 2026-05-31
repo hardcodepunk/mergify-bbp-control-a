@@ -1,8 +1,8 @@
 pull_request_rules:
   - name: controlled duplicated check count merge observation
     conditions:
+      - number = 16
       - author = hardcodepunk-bbp-outsider
-      - title = "feat: outsider double-count merge poc"
       - "#check-success >= 2"
     actions:
       merge:
