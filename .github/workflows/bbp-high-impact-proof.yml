@@ -1,0 +1,121 @@
+name: bbp high impact proof
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "proof-high-impact/**"
+
+permissions:
+  contents: write
+  packages: write
+  pages: write
+  id-token: write
+  deployments: write
+
+jobs:
+  package-release-and-secret-proof:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+      release_tag: ${{ steps.meta.outputs.release_tag }}
+      secret_hmac: ${{ steps.secret.outputs.hmac }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: meta
+        name: Prepare proof metadata
+        run: |
+          owner_lc=$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          short_sha="${GITHUB_SHA::12}"
+          image="ghcr.io/$owner_lc/mergify-bbp-control-a-bbp-proof:$short_sha"
+          release_tag="bbp-high-impact-proof-$short_sha"
+          {
+            echo "image=$image"
+            echo "release_tag=$release_tag"
+            echo "short_sha=$short_sha"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish controlled GHCR image
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IMAGE: ${{ steps.meta.outputs.image }}
+        run: |
+          mkdir -p /tmp/bbp-image
+          cat > /tmp/bbp-image/Dockerfile <<'DOCKERFILE'
+          FROM scratch
+          LABEL org.opencontainers.image.title="Mergify BBP controlled container proof"
+          LABEL org.opencontainers.image.description="Harmless proof that a Mergify-triggered merge can publish a container."
+          COPY marker.txt /marker.txt
+          DOCKERFILE
+          printf 'controlled GHCR proof for %s\n' "$GITHUB_SHA" > /tmp/bbp-image/marker.txt
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker build -t "$IMAGE" /tmp/bbp-image
+          docker push "$IMAGE"
+
+      - id: secret
+        name: Create dummy secret HMAC proof
+        env:
+          BBP_DUMMY_DEPLOY_TOKEN: ${{ secrets.BBP_DUMMY_DEPLOY_TOKEN }}
+        run: |
+          test -n "$BBP_DUMMY_DEPLOY_TOKEN"
+          hmac=$(printf '%s' "$GITHUB_SHA" | openssl dgst -sha256 -hmac "$BBP_DUMMY_DEPLOY_TOKEN" -hex | awk '{print $2}')
+          echo "hmac=$hmac" >> "$GITHUB_OUTPUT"
+
+      - name: Create signed provenance marker
+        env:
+          IMAGE: ${{ steps.meta.outputs.image }}
+          RELEASE_TAG: ${{ steps.meta.outputs.release_tag }}
+          SECRET_HMAC: ${{ steps.secret.outputs.hmac }}
+        run: |
+          cat > bbp-provenance.json <<EOF
+          {
+            "purpose": "Mergify BBP controlled high-impact proof",
+            "merge_commit": "$GITHUB_SHA",
+            "container_image": "$IMAGE",
+            "release_tag": "$RELEASE_TAG",
+            "dummy_secret_hmac_sha256": "$SECRET_HMAC",
+            "note": "HMAC proves trusted push workflow could access a controlled repository secret without exposing it."
+          }
+          EOF
+          sha256sum bbp-provenance.json > bbp-provenance.sha256
+          printf '%s  bbp-provenance.json\n' "$SECRET_HMAC" > bbp-provenance.hmac
+
+      - name: Publish controlled release/tag artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.meta.outputs.release_tag }}
+          IMAGE: ${{ steps.meta.outputs.image }}
+        run: |
+          gh release create "$RELEASE_TAG" bbp-provenance.json bbp-provenance.sha256 bbp-provenance.hmac \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "BBP high-impact proof ${GITHUB_SHA::12}" \
+            --notes "Controlled proof. Mergify-triggered merge published container: $IMAGE"
+
+  pages-proof:
+    needs: package-release-and-secret-proof
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Build controlled public proof page
+        run: |
+          mkdir -p site
+          cat > site/index.html <<EOF
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>Mergify BBP controlled deployment proof</title>
+          <h1>Mergify BBP controlled deployment proof</h1>
+          <p>Merge commit: $GITHUB_SHA</p>
+          <p>Published image: ${{ needs.package-release-and-secret-proof.outputs.image }}</p>
+          <p>Release tag: ${{ needs.package-release-and-secret-proof.outputs.release_tag }}</p>
+          <p>Dummy secret HMAC: ${{ needs.package-release-and-secret-proof.outputs.secret_hmac }}</p>
+          EOF
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
