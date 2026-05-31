@@ -1,29 +1,3 @@
-commands_restrictions:
-  update:
-    conditions:
-      - sender = definitely-not-hardcodepunk-bbp
-  refresh:
-    conditions:
-      - sender = definitely-not-hardcodepunk-bbp
-  rebase:
-    conditions:
-      - sender = definitely-not-hardcodepunk-bbp
-  queue:
-    conditions:
-      - sender = definitely-not-hardcodepunk-bbp
-  dequeue:
-    conditions:
-      - sender = definitely-not-hardcodepunk-bbp
-  copy:
-    conditions:
-      - sender = definitely-not-hardcodepunk-bbp
-  squash:
-    conditions:
-      - sender = definitely-not-hardcodepunk-bbp
-  backport:
-    conditions:
-      - sender = definitely-not-hardcodepunk-bbp
-
 pull_request_rules:
   - name: controlled comment action
     conditions:
