@@ -1,9 +1,8 @@
 pull_request_rules:
-  - name: controlled fork author status trust observation
+  - name: controlled comment action
     conditions:
-      - author = hardcodepunk-bbp-outsider
-      - check-success = controlled-ci
+      - label = bbp-trigger
     actions:
       comment:
         message: |
-          controlled fork-author status trust rule fired for PR #{{number}} by {{author}}
+          controlled workflow automation fired for PR #{{number}} by {{author}}
