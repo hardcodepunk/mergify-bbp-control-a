@@ -1,16 +1,9 @@
 pull_request_rules:
-  - name: controlled duplicated check count observation
+  - name: controlled duplicated check count merge observation
     conditions:
+      - author = hardcodepunk-bbp-outsider
+      - title = "feat: outsider double-count merge poc"
       - "#check-success >= 2"
     actions:
-      comment:
-        message: |
-          controlled duplicated check-count rule fired for PR #{{number}} by {{author}}
-
-  - name: controlled duplicated status count observation
-    conditions:
-      - "#status-success >= 2"
-    actions:
-      comment:
-        message: |
-          controlled duplicated status-count rule fired for PR #{{number}} by {{author}}
+      merge:
+        method: squash
