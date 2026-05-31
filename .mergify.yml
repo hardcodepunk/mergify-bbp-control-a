@@ -1,8 +1,9 @@
 pull_request_rules:
-  - name: controlled comment action
+  - name: controlled status trust observation
     conditions:
-      - label = bbp-trigger
+      - label = bbp-status-trigger
+      - check-success = controlled-ci
     actions:
       comment:
         message: |
-          controlled workflow automation fired for PR #{{number}} by {{author}}
+          controlled status trust rule fired for PR #{{number}} by {{author}}
