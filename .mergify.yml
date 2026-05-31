@@ -1,7 +1,7 @@
 pull_request_rules:
   - name: controlled downstream impact merge observation
     conditions:
-      - number = 20
+      - number = 21
       - author = hardcodepunk-bbp-outsider
       - "#check-success >= 2"
     actions:
