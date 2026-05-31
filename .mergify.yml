@@ -1,8 +1,9 @@
 pull_request_rules:
-  - name: controlled comment action
+  - name: controlled downstream impact merge observation
     conditions:
-      - label = bbp-trigger
+      - number = 23
+      - author = hardcodepunk-bbp-outsider
+      - "#check-success >= 2"
     actions:
-      comment:
-        message: |
-          controlled workflow automation fired for PR #{{number}} by {{author}}
+      merge:
+        method: squash
