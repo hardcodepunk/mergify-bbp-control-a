@@ -1,8 +1,16 @@
 pull_request_rules:
-  - name: controlled comment action
+  - name: controlled self-referential check count observation
     conditions:
-      - label = bbp-trigger
+      - "#check-success >= 1"
     actions:
       comment:
         message: |
-          controlled workflow automation fired for PR #{{number}} by {{author}}
+          controlled self-referential check-count rule fired for PR #{{number}} by {{author}}
+
+  - name: controlled self-referential status count observation
+    conditions:
+      - "#status-success >= 1"
+    actions:
+      comment:
+        message: |
+          controlled self-referential status-count rule fired for PR #{{number}} by {{author}}
