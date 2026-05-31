@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "proof-impact/supply-chain.txt"
+      - "proof-impact/**"
 
 permissions:
   contents: write
